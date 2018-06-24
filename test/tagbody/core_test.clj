@@ -49,3 +49,17 @@
                  (var-set val (+ (var-get val) 8)))
                 (var-get val))))))
 
+(defn- f2 [flag escape]
+  (if flag (escape) 2))
+
+(defn- f1 [flag]
+  (with-local-vars [n 1]
+    (tagbody
+     (var-set n (f2 flag (fn [] (goto :out))))
+     :out)
+    (var-get n)))
+
+(deftest clhs-example-3
+  (testing "Example 3 from the Common Lisp HyperSpec"
+    (is (= 2 (f1 nil)))
+    (is (= 1 (f1 true)))))
