@@ -32,11 +32,10 @@
       [(~'goto [tag#] `(throw (tagbody.Goto. ~tag#)))]
       (let [tag-bodies# ~tag-bodies]
         (loop [goto-tag# ~init-tag]
-          (let [bodies-to-eval# (drop-while (key-not= goto-tag#) tag-bodies#)
-                tag# (try
-                       (doseq [[_# body#] bodies-to-eval#]
-                         (body#))
-                       (catch tagbody.Goto tag#
-                         (.state tag#)))]
-            (when (tag? tag#)
+          (let [bodies-to-eval# (drop-while (key-not= goto-tag#) tag-bodies#)]
+            (when-let [tag# (try
+                              (doseq [[_# body#] bodies-to-eval#]
+                                (body#))
+                              (catch tagbody.Goto tag#
+                                (.state tag#)))]
               (recur tag#)))))) ))
