@@ -7,3 +7,6 @@
 
 (defn -init [tag]
   [[] tag])
+
+(defn -fillInStackTrace [this]
+  this)
