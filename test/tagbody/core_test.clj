@@ -88,3 +88,9 @@
                  :end
                  (var-set x 42))
                 (var-get x))))))
+
+(deftest goto-nonexisting-tag
+  (testing "Trying to goto a nonexisting tag causes a compile-time error"
+    (is (thrown? Error (macroexpand '(tagbody.core/tagbody
+                                      (goto :space)
+                                      :earth))))))
