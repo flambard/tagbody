@@ -8,19 +8,20 @@ Common Lisp-style TAGBODY for Clojure.
 (with-local-vars [val 0]
   (tagbody
     (var-set val 1)
-    (goto 'point-a)
+    (goto point-a)
     (var-set val (+ (var-get val) 16))
     point-c
     (var-set val (+ (var-get val) 4))
-    (goto 'point-b)
+    (goto point-b)
     (var-set val (+ (var-get val) 32))
     point-a
     (var-set val (+ (var-get val) 2))
-    (goto 'point-c)
+    (goto point-c)
     (var-set val (+ (var-get val) 64))
     point-b
     (var-set val (+ (var-get val) 8)))
   (var-get val))
+; => 15
 ```
 
 ## License

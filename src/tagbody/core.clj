@@ -29,7 +29,7 @@
   (let [tag-bodies (expand-tagbody tags-and-forms)
         [init-tag _] (first tag-bodies)]
     `(macrolet
-      [(~'goto [tag#] `(throw (tagbody.Goto. ~tag#)))]
+      [(~'goto [tag#] `(throw (tagbody.Goto. '~tag#)))]
       (let [tag-bodies# ~tag-bodies]
         (loop [goto-tag# ~init-tag]
           (let [bodies-to-eval# (drop-while (key-not= goto-tag#) tag-bodies#)]
