@@ -73,3 +73,18 @@
                       (goto 10))
                  30 (var-set i (* (var-get i) 2)))
                 (var-get i))))))
+
+(deftest multiple-tags
+  (testing "Using multiple tags at the same location"
+    (is (= 42 (with-local-vars [x 0]
+                (tagbody
+                 (goto :middle)
+                 :top
+                 (goto :bottom)
+                 :middle
+                 :center
+                 (goto :top)
+                 :bottom
+                 :end
+                 (var-set x 42))
+                (var-get x))))))
