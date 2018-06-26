@@ -63,3 +63,13 @@
   (testing "Example 3 from the Common Lisp HyperSpec"
     (is (= 2 (f1 nil)))
     (is (= 1 (f1 true)))))
+
+(deftest integer-tags
+  (testing "Using integers as tags"
+    (is (= 20 (with-local-vars [i 0]
+                (tagbody
+                 10 (var-set i (+ (var-get i) 2))
+                 20 (when (< (var-get i) 10)
+                      (goto 10))
+                 30 (var-set i (* (var-get i) 2)))
+                (var-get i))))))
