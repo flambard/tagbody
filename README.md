@@ -1,3 +1,7 @@
+> There once was a master programmer who wrote unstructured programs. A novice programmer, seeking to imitate him, also began to write unstructured programs. When the novice asked the master to evaluate his progress, the master criticized him for writing unstructured programs, saying, "What is appropriate for the master is not appropriate for the novice. You must understand the Tao before transcending structure."
+
+-- from The Tao of Programming
+
 # tagbody
 
 Common Lisp-style TAGBODY for Clojure.
