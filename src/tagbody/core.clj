@@ -24,21 +24,34 @@
 (defn key-not= [tag]
   (fn [[key _]] (not= tag key)))
 
+(defn- literal-binding-value [binding]
+  (.v (.init binding)))
 
-(defmacro tagbody [& tags-and-forms]
-  (let [tag-bodies (expand-tagbody tags-and-forms)
-        [init-tag _] (first tag-bodies)]
-    `(macrolet
-      [(~'goto [tag#]
-        (if (.contains ~(vec (keys tag-bodies)) tag#)
-          `(throw (tagbody.Goto. '~tag#))
-          (throw (Error. (str "Cannot goto nonexisting tag: " tag#)))))]
-      (let [tag-bodies# ~tag-bodies]
-        (loop [goto-tag# ~init-tag]
-          (let [bodies-to-eval# (drop-while (key-not= goto-tag#) tag-bodies#)]
-            (when-let [tag# (try
-                              (doseq [[_# body#] bodies-to-eval#]
-                                (body#))
-                              (catch tagbody.Goto tag#
-                                (.state tag#)))]
-              (recur tag#)))))) ))
+
+(let [tagbody-env-sym (gensym "tagbody-env")]
+
+  (defmacro tagbody [& tags-and-forms]
+    (let [tag-bodies (expand-tagbody tags-and-forms)
+          local-tags (map second (vec (keys tag-bodies)))
+          init-tag (first local-tags)
+          tags-from-environment (when-let [binding (get &env tagbody-env-sym)]
+                                  (literal-binding-value binding))
+          all-visible-tags (distinct (concat local-tags tags-from-environment))]
+      `(let [~tagbody-env-sym '~local-tags]
+         (macrolet
+          [(~'goto [tag#]
+            (if (.contains '~(vec all-visible-tags) tag#)
+              `(throw (tagbody.Goto. '~tag#))
+              (throw (Error. (str "Cannot goto nonexisting tag: " tag#)))))]
+          (let [tag-bodies# ~tag-bodies]
+            (loop [goto-tag# '~init-tag]
+              (let [bodies-left# (drop-while (key-not= goto-tag#) tag-bodies#)]
+                (when-let [tag# (try
+                                  (doseq [[_# body#] bodies-left#]
+                                    (body#))
+                                  (catch tagbody.Goto goto#
+                                    (let [tag# (.state goto#)]
+                                      (if (.contains '~(vec local-tags) tag#)
+                                        tag#
+                                        (throw (tagbody.Goto. tag#))))))]
+                  (recur tag#))))))) )) )

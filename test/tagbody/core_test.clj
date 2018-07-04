@@ -91,6 +91,29 @@
 
 (deftest goto-nonexisting-tag
   (testing "Trying to goto a nonexisting tag causes a compile-time error"
-    (is (thrown? Error (macroexpand '(tagbody.core/tagbody
-                                      (goto :space)
-                                      :earth))))))
+    (is (thrown? Error (clojure.tools.macro/mexpand-all
+                        '(tagbody.core/tagbody
+                          (goto :space)
+                          :earth))))))
+
+(deftest nested-tagbodies
+  (testing "Nested tagbodies"
+    (testing "goto jumps to the innermost matching tag"
+      (is (= 5 (with-local-vars [x 0]
+                 (tagbody
+                  (tagbody
+                   (goto :shadowed-tag)
+                   :shadowed-tag
+                   (var-set x 5))
+                  :shadowed-tag)
+                 (var-get x)))))
+    (testing "goto can jump to an outer tagbody"
+      (is (= 100 (with-local-vars [y 0]
+                   (tagbody
+                    (tagbody
+                     (goto :outer-tag)
+                     :inner-tag)
+                    (var-set y (+ 3 (var-get y)))
+                    :outer-tag
+                    (var-set y (+ 100 (var-get y))))
+                   (var-get y)))))))
