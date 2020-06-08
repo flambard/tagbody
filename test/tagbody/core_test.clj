@@ -116,4 +116,14 @@
                     (var-set y (+ 3 (var-get y)))
                     :outer-tag
                     (var-set y (+ 100 (var-get y))))
+                   (var-get y)))))
+    (testing "goto can jump to an outer tagbody symbol tag"
+      (is (= 100 (with-local-vars [y 0]
+                   (tagbody
+                    (tagbody
+                     (goto outer-tag)
+                     :inner-tag)
+                    (var-set y (+ 3 (var-get y)))
+                    outer-tag
+                    (var-set y (+ 100 (var-get y))))
                    (var-get y)))))))

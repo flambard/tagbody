@@ -32,15 +32,15 @@
 
   (defmacro tagbody [& tags-and-forms]
     (let [tag-bodies (expand-tagbody tags-and-forms)
-          local-tags (map second (vec (keys tag-bodies)))
+          local-tags (map second (keys tag-bodies))
           init-tag (first local-tags)
-          tags-from-environment (when-let [binding (get &env tagbody-env-sym)]
+          tags-from-environment (when-let [binding (tagbody-env-sym &env)]
                                   (literal-binding-value binding))
-          all-visible-tags (distinct (concat local-tags tags-from-environment))]
+          all-visible-tags (set (concat local-tags tags-from-environment))]
       `(let [~tagbody-env-sym '~local-tags]
          (macrolet
           [(~'goto [tag#]
-            (if (.contains '~(vec all-visible-tags) tag#)
+            (if ('~all-visible-tags tag#)
               `(throw (tagbody.Goto. '~tag#))
               (throw (Error. (str "Cannot goto nonexisting tag: " tag#)))))]
           (let [tag-bodies# ~tag-bodies]
