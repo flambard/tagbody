@@ -1,4 +1,4 @@
-(defproject tagbody "0.1.0"
+(defproject tagbody "0.1.1"
   :description "Common Lisp-style tagbody macro for Clojure"
   :url "http://github.com/flambard/tagbody"
   :license {:name "Eclipse Public License"
