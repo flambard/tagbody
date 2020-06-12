@@ -59,7 +59,7 @@
           local-tags (-> tag-bodies keys set)
           environment-tags (some-> (tagbody-env-sym &env) literal-binding-value)
           all-visible-tags (union local-tags environment-tags)]
-      `(let [~tagbody-env-sym '~local-tags]
+      `(let [~tagbody-env-sym ~local-tags]
          (macrolet
           [(~'goto [tag#]
             (let [exptag# (expand-tag tag#)]
