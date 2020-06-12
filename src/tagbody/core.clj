@@ -31,7 +31,7 @@
   (fn [[key _]] (not= tag key)))
 
 (defn- literal-binding-value [binding]
-  (.v (.init binding)))
+  (.. binding init v))
 
 
 (let [tagbody-env-sym (gensym "tagbody-env")]
@@ -52,10 +52,9 @@
                 (throw (Error. (str "Cannot goto nonexisting tag: " exptag#))))))]
           (let [tag-bodies# ~tag-bodies]
             (loop [goto-tag# ~init-tag]
-              (let [bodies-left# (drop-while (key-not= goto-tag#) tag-bodies#)]
+              (let [bodies# (vals (drop-while (key-not= goto-tag#) tag-bodies#))]
                 (when-let [tag# (try
-                                  (doseq [[_# body#] bodies-left#]
-                                    (body#))
+                                  (doseq [body# bodies#] (body#))
                                   (catch tagbody.Goto goto#
                                     (let [tag# (.state goto#)]
                                       (if (~(set local-tags) tag#)
