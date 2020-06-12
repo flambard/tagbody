@@ -15,18 +15,19 @@
     (str tag)
     tag))
 
-(defn- expand-tags-and-forms [tag forms tag-map]
-  (if-not (tag? tag)
-    tag-map
-    (let [[tag-forms [next-tag & rest]] (split-with (complement tag?) forms)
-          forms-tag (expand-tag tag)]
-      (recur next-tag rest (conj tag-map {forms-tag `(fn [] ~@tag-forms)})))))
+(defn- expand-tags-and-forms [tags-and-forms]
+  (loop [[tag & forms] tags-and-forms
+         tag-map (array-map)]
+    (if-not (tag? tag)
+      tag-map
+      (let [[tag-forms more-tags-and-forms] (split-with (complement tag?) forms)
+            clause {(expand-tag tag) `(fn [] ~@tag-forms)}]
+        (recur more-tags-and-forms (conj tag-map clause))))))
 
-(defn- expand-tagbody [tags-and-forms]
-  (let [[first & rest] tags-and-forms]
-    (if (tag? first)
-      (expand-tags-and-forms first rest (array-map))
-      (expand-tags-and-forms (gensym "init") tags-and-forms (array-map)))))
+(defn- expand-tagbody [body]
+  (expand-tags-and-forms (if (tag? (first body))
+                           body
+                           `(~(gensym "init") ~@body))))
 
 (defn- key-not= [tag]
   (fn [[key _]] (not= tag key)))
