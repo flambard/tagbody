@@ -5,39 +5,11 @@
 
 (compile 'tagbody.Goto)
 
-(defn- tag? [form]
-  (or (symbol? form)
-      (keyword? form)
-      (integer? form)))
-
-(defn expand-tag [tag]
-  (if (symbol? tag)
-    (str tag)
-    tag))
-
-(defn- expand-tags-and-forms [tags-and-forms]
-  (loop [[tag & forms] tags-and-forms
-         tag-map (array-map)]
-    (if-not (tag? tag)
-      tag-map
-      (let [[tag-forms more-tags-and-forms] (split-with (complement tag?) forms)
-            clause {(expand-tag tag) `(fn [] ~@tag-forms)}]
-        (recur more-tags-and-forms (conj tag-map clause))))))
-
-(defn- expand-tagbody [body]
-  (expand-tags-and-forms (if (tag? (first body))
-                           body
-                           `(~(gensym "init") ~@body))))
+(defn goto* [tag]
+  (throw (tagbody.Goto. tag)))
 
 (defn- key-not= [tag]
   (fn [[key _]] (not= tag key)))
-
-(defn- literal-binding-value [binding]
-  (set (.. binding init v)))
-
-
-(defn goto* [tag]
-  (throw (tagbody.Goto. tag)))
 
 (defn tagbody* [tag-bodies]
   (let [local-tags (-> tag-bodies keys set)]
@@ -51,6 +23,33 @@
                                tag
                                (goto* tag)))))]
           (recur tag))))))
+
+
+(defn- tag? [form]
+  (or (symbol? form)
+      (keyword? form)
+      (integer? form)))
+
+(defn expand-tag [tag]
+  (if (symbol? tag)
+    (str tag)
+    tag))
+
+(defn- expand-tags-and-forms [tags-and-forms]
+  (loop [[tag & forms] tags-and-forms, tag-map (array-map)]
+    (if-not (tag? tag)
+      tag-map
+      (let [[tag-forms more-tags-and-forms] (split-with (complement tag?) forms)
+            clause {(expand-tag tag) `(fn [] ~@tag-forms)}]
+        (recur more-tags-and-forms (conj tag-map clause))))))
+
+(defn- expand-tagbody [body]
+  (expand-tags-and-forms (if (tag? (first body))
+                           body
+                           `(~(gensym "init") ~@body))))
+
+(defn- literal-binding-value [binding]
+  (set (.. binding init v)))
 
 
 (let [tagbody-env-sym (gensym "tagbody-env")]
