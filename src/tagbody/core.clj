@@ -35,6 +35,9 @@
   (set (.. binding init v)))
 
 
+(defn goto* [tag]
+  (throw (tagbody.Goto. tag)))
+
 (defn tagbody* [tag-bodies]
   (let [local-tags (-> tag-bodies keys set)]
     (loop [goto-tag (-> tag-bodies first key)]
@@ -45,7 +48,7 @@
                            (let [tag (.state goto)]
                              (if (local-tags tag)
                                tag
-                               (throw (tagbody.Goto. tag))))))]
+                               (goto* tag)))))]
           (recur tag))))))
 
 
@@ -61,6 +64,6 @@
           [(~'goto [tag#]
             (let [exptag# (expand-tag tag#)]
               (if (~all-visible-tags exptag#)
-                `(throw (tagbody.Goto. ~exptag#))
+                `(goto* ~exptag#)
                 (throw (Error. (str "Cannot goto nonexisting tag: " exptag#))))))]
           (tagbody* ~tag-bodies))) )))
