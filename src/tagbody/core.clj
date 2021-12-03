@@ -34,17 +34,12 @@
       (keyword? form)
       (integer? form)))
 
-(defn expand-tag [tag]
-  (if (symbol? tag)
-    (str tag)
-    tag))
-
 (defn- expand-tags-and-forms [tags-and-forms]
   (loop [[tag & forms] tags-and-forms, tag-map (array-map)]
     (if-not (tag? tag)
       tag-map
       (let [[tag-forms more-tags-and-forms] (split-with (complement tag?) forms)
-            clause {(expand-tag tag) `(fn [] ~@tag-forms)}]
+            clause {(str tag) `(fn [] ~@tag-forms)}]
         (recur more-tags-and-forms (conj tag-map clause))))))
 
 (defn- expand-tagbody [body]
@@ -66,7 +61,7 @@
       `(let [~tagbody-env-sym ~local-tags]
          (macrolet
           [(~'goto [tag#]
-            (let [exptag# (expand-tag tag#)]
+            (let [exptag# (str tag#)]
               (if (~all-visible-tags exptag#)
                 `(goto* ~exptag#)
                 (throw (Error. (str "Cannot goto nonexisting tag: " exptag#))))))]
