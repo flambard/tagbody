@@ -11,18 +11,22 @@
 (defn- key-not= [tag]
   (fn [[key _]] (not= tag key)))
 
+(defn- run-bodies-catching-goto [bodies]
+  (try
+    (run! #(%) bodies)
+    (catch tagbody.Goto goto
+      (.state goto))))
+
 (defn tagbody* [tag-bodies]
   (let [local-tags (-> tag-bodies keys set)]
     (loop [goto-tag (-> tag-bodies first key)]
-      (let [bodies (vals (drop-while (key-not= goto-tag) tag-bodies))]
-        (when-let [tag (try
-                         (doseq [body bodies] (body))
-                         (catch tagbody.Goto goto
-                           (let [tag (.state goto)]
-                             (if (local-tags tag)
-                               tag
-                               (goto* tag)))))]
-          (recur tag))))))
+      (when-let [tag (->> tag-bodies
+                          (drop-while (key-not= goto-tag))
+                          vals
+                          run-bodies-catching-goto)]
+        (if (local-tags tag)
+          (recur tag)
+          (goto* tag))))))
 
 
 (defn- tag? [form]
